@@ -25,9 +25,10 @@ if __name__ == '__main__':
   token_key = config['Yelp']['TokenKey']
   token_secret = config['Yelp']['TokenSecret']
   crawler_wait = float(config['Yelp']['CrawlerWait'])
-
+  # retrieve limit is maximum 20, so take any config value less than or equal to 20
+  retrieve_limit = min(int(config['Yelp']['RetrieveLimit']), 20)
+  max_retries = int(config['Yelp']['MaxRetries'])
   yelp_api = config['Yelp']['Url']
-
  
   with open(args.zipcodes, 'r') as f_zipcodes, open(args.output, 'w') as f_output:
     # Initialize all the things we need for scraping 
@@ -41,21 +42,44 @@ if __name__ == '__main__':
     n_zipcodes = len(zipcodes)
     print "Starting parse on %d zipcodes found in %s" % (n_zipcodes, args.zipcodes)
     for i, z in enumerate(zipcodes):
-      url = "%s/v2/search?category_filters=%s&location=%d" % \
-        (yelp_api, ",".join(category_filters), z)
-      print "[%d/%d] %d: %s -" % (i, n_zipcodes, z, url),
+      retries = 0
+      n_results = 0 
+      total_results = None 
+      while (total_results is None or n_results < total_results) and retries < max_retries:
+        offset = n_results
 
-      res = requests.get(url, auth = auth)
-      if res.status_code == 200:
-        print "success"
-        f_output.write(res.text)
-        success.append(str(z))
-      else:
-        print "FAILED %s" % res.status_code
-        failed.append(str(z))
+        # Build the API call
+        url = "%s/v2/search?category_filter=%s&location=%d&offset=%d" % \
+          (yelp_api, ",".join(category_filters), z, offset)
+        print "[%d/%d] %d off: %d/%d: %s -" % (i, n_zipcodes, z, offset, total_results, url),
 
-      time.sleep(crawler_wait) 
+        # Make the API call and parse the json
+        res = requests.get(url, auth = auth)
+        try:
+          js = json.loads(res.text)
+        except Exception as e:
+          res.status_code == None
 
+        if res.status_code == 200:
+          n_results = n_results + retrieve_limit 
+          retries = 0
+          print "success"
+          # one thing that I noticed is that the total changes depending on which server we
+          # eventually hit. In order to make sure we grab everything, get the max total and
+          # always just use that 
+          total_results = max(int(js["total"]), total_results)
+          f_output.write(res.text)
+          success.append(str((z, offset)))
+        else:
+          # if something failed, increment the max retries 
+          print "FAILED %s (%d/%d) retries left" % (res.status_code, retries, max_retries)
+          retries = retries + 1
+          failed.append((str(z), offset))
+
+        # sleep between API requests to make sure we don't hit the rate limit
+        time.sleep(crawler_wait) 
+
+    # print some diagnostics once we run through the complete zip code set
     print "COMPLETED"
     print "%d success, %d failures" % (len(success), len(failed))
     print "failed: [%s]" % ",".join(failed)
