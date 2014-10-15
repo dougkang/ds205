@@ -14,7 +14,7 @@ if __name__ == '__main__':
   parser.add_argument('--zipcodes', metavar='z', required=False, type=str, 
       default='./zipcodes.lst', help='path to zipcode file')
   parser.add_argument('--output', metavar='o', required=False, type=str, 
-      default='./out.json', help='path to output file')
+      default='./businesses.json', help='path to output file')
   args = parser.parse_args()
 
   # Read configs using config parser
@@ -44,8 +44,8 @@ if __name__ == '__main__':
     for i, z in enumerate(zipcodes):
       retries = 0
       n_results = 0 
-      total_results = None 
-      while (total_results is None or n_results < total_results) and retries < max_retries:
+      total_results = -1 
+      while (total_results < 0 or n_results < total_results) and retries < max_retries:
         offset = n_results
 
         # Build the API call
@@ -68,7 +68,7 @@ if __name__ == '__main__':
           # eventually hit. In order to make sure we grab everything, get the max total and
           # always just use that 
           total_results = max(int(js["total"]), total_results)
-          f_output.write(res.text)
+          f_output.write("\n".join([json.dumps(x) for x in js["businesses"]]) + "\n")
           success.append(str((z, offset)))
         else:
           # if something failed, increment the max retries 
