@@ -68,7 +68,7 @@ if __name__ == '__main__':
         if res.status_code == 200:
           n_results = n_results + 1
           print "success"
-          f_output.write(res.text)
+          f_output.write(res.text + "\n")
           success.append(business_id)
           break
         else:
