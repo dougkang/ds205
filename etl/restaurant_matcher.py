@@ -20,10 +20,6 @@ class RestaurantMatcher:
                                      "must": [
                                        { "fuzzy": {"name": record["name"]}},
                                      ],
-                                     "must_not": [
-                                       { "match" : {
-                                           "source": record["source"]}}
-                                     ],
                                      "should": [
                                        { "match": { 
                                            "city" : record["city"]}},
