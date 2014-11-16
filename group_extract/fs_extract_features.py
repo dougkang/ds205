@@ -2,6 +2,7 @@ import json
 import argparse
 import configparser
 from pymongo import MongoClient
+from bson import json_util
 
 def bag_of_words_attr(word, attr):
   return "%s:%s" % (word, attr)
@@ -60,7 +61,9 @@ if __name__ == '__main__':
       default='./tips.json', help='path to tips.json')
   parser.add_argument('--output', metavar='o', required=False, type=str, 
       default='./fs_features.json', help='path to output file')
-  parser.add_argument('--clear_db', metavar='x', nargs='?', type=bool, 
+  parser.add_argument('--dump', action="store_true",
+      default=True , help='whether or not to dump to output file')
+  parser.add_argument('--clear_db', action="store_true",
       default=False, help='whether or not to clear db before starting')
   args = parser.parse_args()
 
@@ -80,6 +83,7 @@ if __name__ == '__main__':
     exit(1)
 
   if args.clear_db:
+    print "Clearing db"
     collection.drop()
  
   collection.ensure_index("id")
@@ -118,6 +122,12 @@ if __name__ == '__main__':
       except Exception as e:
         t_fail_count = t_fail_count + 1
         print "FAILED: %s" % e
+
+  if args.dump:
+    with open(args.output, 'w') as f_output:
+      print "Dumping features to disk"
+      for x in collection.find():
+        f_output.write(json_util.dumps(x))
 
   connection.close()
   print "COMPLETED: %d/%d businesses loaded, %d/%d tips loaded" % (b_count - b_fail_count, b_count, t_count - t_fail_count, t_count)
