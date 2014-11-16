@@ -1,0 +1,9 @@
+configparser==3.3.0r2
+foursquare==20130707
+httplib2==0.9
+oauthlib==0.7.1
+poster==0.8.1
+pymongo==2.7.2
+requests==2.4.3
+requests-oauthlib==0.4.2
+wsgiref==0.1.2
