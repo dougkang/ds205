@@ -39,11 +39,31 @@ class FeedParser:
             self.docs.insert(data)
         else:
             self.docs.save(data)
+    
+    def get_address_number(self, address):
+        """Finds the first numeric word in the address and returns it.
+        This does not accommodate address numbers that end with a letter."""
+        if isinstance(address, list):
+            for item in address:
+                for i in item.split(' '):
+                    if i.lower() == "ste":
+                        break
+                    if str.isdecimal(i):
+                        return i
+            return ''
+        for item in address.split(' '):
+            if item.lower() == "ste" or item.lower() == "suite":
+                return ''
+            if str.isdecimal(item):
+                return item
+        return ''            
 
     def parse_yelp(self, filename):
         with open(filename) as file:
             err = 0
             for line in file:
+                city = postalcode = state = country = address = ''
+                latitude = longitude = addr_num = ''
                 try:
                     # Data stored as json string
                     row = json.loads(line)
@@ -68,6 +88,7 @@ class FeedParser:
                         state = self.get_attr(location, 'state_code')
                         country = self.get_attr(location, 'country_code')
                         address = self.get_attr(location, 'address')
+                        addr_num = self.get_address_number(address)
                         coord = self.get_attr(location, 'coordinate')
                         if coord != "":
                             latitude = self.get_attr(coord, 'latitude')
@@ -77,7 +98,8 @@ class FeedParser:
                     doc = {"_id":yelp_id, "name": name,
                             "city":city, "state":state, "postalcode":postalcode,
                             "country":country, "lat":latitude, "long":longitude,
-                            "source":"yelp", "addr":address, "map":""}
+                            "source":"yelp", "addr":address, "map":"", 
+                            "addr_num":addr_num}
                     self.save_data(yelp_id, doc)
                     
                 except ValueError as e:
@@ -88,6 +110,8 @@ class FeedParser:
     def parse_fs(self, filename):
         # Reads FourSquare feed and extracts elements to create Id map
         with codecs.open(filename, 'r', encoding='utf-8') as file:
+            city = postalcode = state = country = address = ''
+            latitude = longitude = addr_num = ''
             err = 0
             for line in file:
                 try:
@@ -110,9 +134,10 @@ class FeedParser:
                         location = self.get_attr(venue, 'location')
                         if location != "":
                             address = self.get_attr(location, 'address')
+                            addr_num = self.get_address_number(address)
                             city = self.get_attr(location, 'city')
                             #city = str(city.encode('ascii', errors='ignore'))
-                            city = (x for x in name if 0 < ord(x) < 127)
+                            city = (x for x in city if 0 < ord(x) < 127)
                             city = ''.join(city)
                             state = self.get_attr(location, 'state')
                             postalcode = self.get_attr(location, 'postalCode')
@@ -124,7 +149,8 @@ class FeedParser:
                     doc = {"_id":fs_id, "name": name, 
                            "city":city, "state":state, "postalcode":postalcode,
                            "country":country, "lat":latitude, "long":longitude,
-                           "source":"foursquare", "addr":address, "map":""}
+                           "source":"foursquare", "addr":address, "map":"",
+                           "addr_num":addr_num}
                     self.save_data(fs_id, doc)
                         
                 except ValueError as e:
