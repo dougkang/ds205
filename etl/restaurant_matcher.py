@@ -25,18 +25,20 @@ class RestaurantMatcher:
                 elif mapped != "":
                     self.tie_break(lookup, match)
         
-
+    # --------------> need to update to handle issue with yelp addr list    
     def find_match(self, record):
         """Query the Elasticsearch index and return best match."""
         # If missing lat, set to 0 to accommodate cosine function
         record["lat"] = 0 if record["lat"] == "" else record["lat"]
+        record["long"] = 0 if record["long"] == "" else record["long"]
         # Find the ten best matches 
-        print(record)
         res = self.es.search(index='yelpsquare.restaurants',
                         body = { "query" : { "filtered": { "query" : {
                                    "bool": {
                                      "must": [
-                                       { "fuzzy": {"name": record["name"]}},
+                                       # Need to make sure first 2 characters match <------------!!!!!
+                                       { "fuzzy": {"name": {"value":record["name"],
+                                                            "prefix_length":2}}},
                                      ],
                                      "should": [
                                        { "match": { 
@@ -77,7 +79,7 @@ class RestaurantMatcher:
                                  }
                                }}})
         scores = [result["_score"] for result in res['hits']['hits']]
-        if res['hits']['total'] != 0:
+        if res['hits']['hits']:
             result = res['hits']['hits'][0]
             # Should we count top two as matches?
             if len(scores) > 1:
