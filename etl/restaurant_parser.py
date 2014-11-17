@@ -1,6 +1,6 @@
 import json, collections, ast, pymongo, os, codecs, string
 
-class FeedParser:
+class RestaurantParser:
     
     def __init__(self):
         # Counters used to track number of unique restaurants in feed
@@ -88,6 +88,8 @@ class FeedParser:
                         state = self.get_attr(location, 'state_code')
                         country = self.get_attr(location, 'country_code')
                         address = self.get_attr(location, 'address')
+                        if address != "":
+                            address =  ' '.join(address)
                         addr_num = self.get_address_number(address)
                         coord = self.get_attr(location, 'coordinate')
                         if coord != "":
@@ -161,5 +163,5 @@ class FeedParser:
             print(self.fs_places.most_common(20))
             
 if __name__ == '__main__':
-    parser = FeedParser()
+    parser = RestaurantParser()
             
