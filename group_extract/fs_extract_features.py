@@ -26,7 +26,7 @@ def extract_restaurant_features(json):
     "city": location["city"].lower() if "city" in location else "unknown",
     "house_no": address[0] if len(address) > 1 else "none",
     "street": address[-1] if len(address) > 0 else "unknown",
-    "categories": categories }
+    "categories": "\n".join(categories) }
 
 def extract_tip_features(json):
   """Given a json object representing the tips, extract our features"""
@@ -48,7 +48,7 @@ def extract_tip_features(json):
     "no_females": female_count,
     "no_males": male_count,
     "no_tips": tip_count,
-    "tips": text }
+    "tips": "\n".join(text) }
 
 if __name__ == '__main__':
   # Parse input arguments
@@ -100,6 +100,9 @@ if __name__ == '__main__':
         print "[%d] %s: extracting restaurant features:" % (b_count, vid),
         feat = extract_restaurant_features(bjson)
         feat["id"] = vid
+        # for the academic dataset pull, if we have a yelp id, then include it
+        if "yelpid" in bjson["venue"]:
+          feat["yelpid"] = bjson["venue"]["yelpid"] 
         collection.insert(feat)
         print "SUCCESS"
       except Exception as e:
@@ -127,7 +130,7 @@ if __name__ == '__main__':
     with open(args.output, 'w') as f_output:
       print "Dumping features to disk"
       for x in collection.find():
-        f_output.write(json_util.dumps(x))
+        f_output.write(json_util.dumps(x) + "\n")
 
   connection.close()
   print "COMPLETED: %d/%d businesses loaded, %d/%d tips loaded" % (b_count - b_fail_count, b_count, t_count - t_fail_count, t_count)
