@@ -20,7 +20,9 @@ class ProcessMatches:
                 else:
                     self.flag = False
                     break
+            # Can optimize this by running multiple threads
             RestaurantMatcher(self.records)
             
 if __name__ == '__main__':
     processor = ProcessMatches("foursquare")
+    #processor2 = ProcessMatches("yelp")
