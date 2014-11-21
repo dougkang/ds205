@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+	<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+		<title>
+			Yelpsquare®
+		</title>
+		<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+	    <!-- Custom styles for this template -->
+	    <link href="{{ url_for('static', filename='css/navbar-fixed-top.css') }}" rel="stylesheet">
+	</head>
+	<body>
+		
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Yelpsquare</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+		
+    <div class="container">
+      <!-- Main component for a primary marketing message or call to action -->
+			<p>{% if name %}</p>
+				<h1>
+				Hello {{ name }}!
+			</h1>
+			<p>{% else %}</p>
+      <div class="jumbotron">
+        <p>Search in your city for the best places to eat!</p>
+				<form class="form-inline" role="form">
+				  <div class="form-group">
+			      <input type="text" class="form-control" id="cityInput" placeholder="Choose your city">
+				  </div>
+				  <div class="form-group">
+				    <label class="sr-only" for="exampleInputPassword2">Password</label>
+				    <input type="text" class="form-control" id="group-type-password" placeholder="Password">
+				  </div>
+				  <div class="checkbox">
+				    <label>
+				      <input type="checkbox"> Remember me
+				    </label>
+				  </div>
+				</br>
+				<div class="button">
+				  <button type="submit" class="btn btn-default">Sign in</button>
+				</div>
+				</form>
+        <p>
+          <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
+        </p>
+				
+      </div>
+			<p>{% endif %}</p>
+    </div> <!-- /container -->
+
+		
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="{{ url_for('static',filename='js/bootstrap.min.js') }}" type="text/javascript"></script>
+	</body>
+</html>
