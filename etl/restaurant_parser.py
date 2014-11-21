@@ -6,17 +6,20 @@ class RestaurantParser:
         # Counters used to track number of unique restaurants in feed
         self.yelp_places = collections.Counter()
         self.fs_places = collections.Counter()
-        self.client = pymongo.MongoClient()
+        # Need to update for AWS 
+        self.client = pymongo.MongoClient() #<-------------------------------------
         self.db = self.client.yelpsquare
         self.docs = self.db.restaurants
         
         # Process files from Yelp
-        for fn in os.listdir(os.path.realpath('yelp')):
+        # Needs to point at s3, which would eliminate the file tree traversal
+        for fn in os.listdir(os.path.realpath('yelp')): 
             filename, extension = os.path.splitext('yelp/' + fn)
             if extension == ".json":
                 self.parse_yelp(filename + extension)
         
         # Process files from FourSquare
+        # Needs to point at s3, which would eliminate the file tree traversal
         for fn in os.listdir(os.path.realpath('foursquare')):
             filename, extension = os.path.splitext('foursquare/' + fn)
             if extension == ".txt":
