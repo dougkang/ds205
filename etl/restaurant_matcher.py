@@ -24,21 +24,21 @@ class RestaurantMatcher:
                 # If there is a match that has a mapped id, need a tie break
                 elif mapped != "":
                     self.tie_break(lookup, match)
-        
-    # --------------> need to update to handle issue with yelp addr list    
+         
     def find_match(self, record):
         """Query the Elasticsearch index and return best match."""
         # If missing lat, set to 0 to accommodate cosine function
         record["lat"] = 0 if record["lat"] == "" else record["lat"]
         record["long"] = 0 if record["long"] == "" else record["long"]
-        # Find the ten best matches 
+        
+        # Find the ten best matches
+        ################## Easy optimization, if address exists require it to match
         res = self.es.search(index='yelpsquare.restaurants',
                         body = { "query" : { "filtered": { "query" : {
                                    "bool": {
                                      "must": [
-                                       # Need to make sure first 2 characters match <------------!!!!!
                                        { "fuzzy": {"name": {"value":record["name"],
-                                                            "prefix_length":2}}},
+                                                            "prefix_length":0}}},
                                      ],
                                      "should": [
                                        { "match": { 
@@ -68,7 +68,7 @@ class RestaurantMatcher:
                                                math.cos(math.radians(
                                                  record["lat"])))}}}
                                      ],
-                                     "minimum_should_match":2
+                                     "minimum_should_match":3
                                    }
                                  }, "filter": {
                                      "not": {
@@ -96,7 +96,9 @@ class RestaurantMatcher:
 
         # Set the new map values        
         lookup["map"] = match["_id"]
+        lookup["map_score"] = match["_score"]
         match_record["map"] = lookup["_id"]
+        match_record["map_score"] = match["_score"]
         
         # Update the records in MongoDB
         self.collection.update({"_id":lookup["_id"]}, {"$set": lookup}, 
