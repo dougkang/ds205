@@ -49,47 +49,37 @@
 			<p>{% else %}</p>
       <div class="jumbotron">
         <p>Search for the best places to eat</p>
-				<form class="form-inline" role="form">
-					<!-- Single button -->
-					<div class="btn-group">
-					  <button type="button" class="btn btn-default btn-lg dropdown-toggle" 
-							data-toggle="dropdown" aria-expanded="false" z-index:10>
-					    Type of food <span class="caret"></span>
-					  </button>
-					  <ul class="dropdown-menu" role="menu">
-							{% for city in cities %}
-					    <li><a href="#">{{city}}</a></li>
-							{% endfor %}
-					  </ul>
-					</div>
-					<!-- Single button -->
-					<div class="btn-group">
-					  <button type="button" class="btn btn-default btn-lg dropdown-toggle" 
-							data-toggle="dropdown" aria-expanded="false">
-					    City <span class="caret"></span>
-					  </button>
-					  <ul class="dropdown-menu" role="menu">
-							{% for city in cities %}
-					    <li><a href="#">{{city}}</a></li>
-							{% endfor %}
-					  </ul>
-					</div>
-					<!-- Single button -->
-					<div class="btn-group">
-					  <button type="button" class="btn btn-default btn-lg dropdown-toggle" 
-							data-toggle="dropdown" aria-expanded="false">
-					    Who's going? <span class="caret"></span>
-					  </button>
-					  <ul class="dropdown-menu" role="menu">
-							{% for city in cities %}
-					    <li><a href="#">{{city}}</a></li>
-							{% endfor %}
-					  </ul>
-					</div>
-					<button type="submit" class="btn btn-primary btn-lg">Search &raquo;</button>
+				<form role="form" method="GET" action="/search">
+					<div class="row">
+						<div class="form-group col-md-3">
+							<select type="text" class="form-control">
+								<option value="" selected disabled>What's for dinner?</option>
+								{% for city in cities %}
+						    <option>{{city}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<select name="city" type="text" class="form-control">
+								<option value="" selected disabled>Where are you?</option>
+								{% for city in cities %}
+						    <option value="{{ city }}">{{ city }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<select type="text" class="form-control">
+								<option value="" selected disabled>Who's going?</option>
+								{% for city in cities %}
+						    <option>{{city}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<button type="submit" class="btn btn-primary">Search &raquo;</button>
+						</div>
+					</div>	
 				</form>
-        
-				
       </div>
 			<p>{% endif %}</p>
     </div> <!-- /container -->
