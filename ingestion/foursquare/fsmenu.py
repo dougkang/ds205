@@ -51,6 +51,7 @@ class FSMenuCrawl:
 
     def insert(self, entry):
         try:
+            print "[insert] " + str(entry)
             self.fsmenu.insert(entry)
         except pymongo.errors.DuplicateKeyError:
             pass
@@ -71,7 +72,9 @@ def crawl_fs_menus(fsmenu):
     cursor = fsmenu.db_get_venues_with_menu() 
     count = 0
     for entry in cursor:
+        print "[fsmenu] " + str(entry)
         menu = fsmenu.get_menu(entry['_id'])
+        menu['id'] = entry['_id'])
         fsmenu.menu_write(json.dumps(menu))
         fsmenu.menu_write("\n")
         time.sleep(0.75)
