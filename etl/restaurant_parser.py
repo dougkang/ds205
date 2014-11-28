@@ -1,22 +1,25 @@
 import json, collections, ast, pymongo, os, codecs, string
 
-class FeedParser:
+class RestaurantParser:
     
     def __init__(self):
         # Counters used to track number of unique restaurants in feed
         self.yelp_places = collections.Counter()
         self.fs_places = collections.Counter()
-        self.client = pymongo.MongoClient()
+        # Need to update for AWS 
+        self.client = pymongo.MongoClient() #<-------------------------------------
         self.db = self.client.yelpsquare
         self.docs = self.db.restaurants
         
         # Process files from Yelp
-        for fn in os.listdir(os.path.realpath('yelp')):
+        # Needs to point at s3, which would eliminate the file tree traversal
+        for fn in os.listdir(os.path.realpath('yelp')): 
             filename, extension = os.path.splitext('yelp/' + fn)
             if extension == ".json":
                 self.parse_yelp(filename + extension)
         
         # Process files from FourSquare
+        # Needs to point at s3, which would eliminate the file tree traversal
         for fn in os.listdir(os.path.realpath('foursquare')):
             filename, extension = os.path.splitext('foursquare/' + fn)
             if extension == ".txt":
@@ -88,6 +91,8 @@ class FeedParser:
                         state = self.get_attr(location, 'state_code')
                         country = self.get_attr(location, 'country_code')
                         address = self.get_attr(location, 'address')
+                        if address != "":
+                            address =  ' '.join(address)
                         addr_num = self.get_address_number(address)
                         coord = self.get_attr(location, 'coordinate')
                         if coord != "":
@@ -161,5 +166,5 @@ class FeedParser:
             print(self.fs_places.most_common(20))
             
 if __name__ == '__main__':
-    parser = FeedParser()
+    parser = RestaurantParser()
             
