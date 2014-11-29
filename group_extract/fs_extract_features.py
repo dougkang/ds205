@@ -2,6 +2,7 @@ import json
 import argparse
 import configparser
 from pymongo import MongoClient
+from bson import json_util
 
 def bag_of_words_attr(word, attr):
   return "%s:%s" % (word, attr)
@@ -25,7 +26,7 @@ def extract_restaurant_features(json):
     "city": location["city"].lower() if "city" in location else "unknown",
     "house_no": address[0] if len(address) > 1 else "none",
     "street": address[-1] if len(address) > 0 else "unknown",
-    "categories": categories }
+    "categories": "\n".join(categories) }
 
 def extract_tip_features(json):
   """Given a json object representing the tips, extract our features"""
@@ -47,7 +48,7 @@ def extract_tip_features(json):
     "no_females": female_count,
     "no_males": male_count,
     "no_tips": tip_count,
-    "tips": text }
+    "tips": "\n".join(text) }
 
 if __name__ == '__main__':
   # Parse input arguments
@@ -60,7 +61,9 @@ if __name__ == '__main__':
       default='./tips.json', help='path to tips.json')
   parser.add_argument('--output', metavar='o', required=False, type=str, 
       default='./fs_features.json', help='path to output file')
-  parser.add_argument('--clear_db', metavar='x', nargs='?', type=bool, 
+  parser.add_argument('--dump', action="store_true",
+      default=True , help='whether or not to dump to output file')
+  parser.add_argument('--clear_db', action="store_true",
       default=False, help='whether or not to clear db before starting')
   args = parser.parse_args()
 
@@ -80,6 +83,7 @@ if __name__ == '__main__':
     exit(1)
 
   if args.clear_db:
+    print "Clearing db"
     collection.drop()
  
   collection.ensure_index("id")
@@ -96,6 +100,9 @@ if __name__ == '__main__':
         print "[%d] %s: extracting restaurant features:" % (b_count, vid),
         feat = extract_restaurant_features(bjson)
         feat["id"] = vid
+        # for the academic dataset pull, if we have a yelp id, then include it
+        if "yelpid" in bjson["venue"]:
+          feat["yelpid"] = bjson["venue"]["yelpid"] 
         collection.insert(feat)
         print "SUCCESS"
       except Exception as e:
@@ -118,6 +125,12 @@ if __name__ == '__main__':
       except Exception as e:
         t_fail_count = t_fail_count + 1
         print "FAILED: %s" % e
+
+  if args.dump:
+    with open(args.output, 'w') as f_output:
+      print "Dumping features to disk"
+      for x in collection.find():
+        f_output.write(json_util.dumps(x) + "\n")
 
   connection.close()
   print "COMPLETED: %d/%d businesses loaded, %d/%d tips loaded" % (b_count - b_fail_count, b_count, t_count - t_fail_count, t_count)
