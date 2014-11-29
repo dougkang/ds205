@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+	<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+		<title>
+			Yelpsquare®
+		</title>
+		<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+	  <!-- Custom styles for this template -->
+	  <link href="{{ url_for('static', filename='css/navbar-fixed-top.css') }}" rel="stylesheet" type="text/css">
+		<link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+						data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Yelpsquare</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+		
+    <div class="container">
+      <!-- Main component for a primary marketing message or call to action -->
+      <div class="jumbotron">
+        <p>Search for the best places to eat</p>
+				<form role="form" method="GET" action="">
+					<div class="row">
+						<div class="form-group col-md-3">
+							<select type="text" class="form-control">
+								<option value="" selected disabled>What's for dinner?</option>
+								{% for city in cities %}
+						    <option>{{city}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<select name="city" type="text" class="form-control">
+								<option value="" selected disabled>Where are you?</option>
+								{% for city in cities %}
+						    <option value="{{ city }}">{{ city }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<select type="text" class="form-control">
+								<option value="" selected disabled>Who's going?</option>
+								{% for city in cities %}
+						    <option>{{ city }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
+							<button type="submit" class="btn btn-primary">Search &raquo;</button>
+						</div>
+					</div>	
+				</form>
+      </div>
+			{% if results|length > 0 %}
+			<table class="table">
+				<caption>Search results</caption>
+				<thead>
+					<tr>
+						<th class="col-md-1"></th>
+						<th class="col-md-2">Restaurant</th>
+						<th class="col-md-2">Rating</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% set counter = 1 %}
+					{% for result in results %}
+					<tr>	
+						<td>{{ counter }}</td>
+						<td>{{ result['name'] }}</td>
+						<td>***</td>
+					</tr>
+					{% set counter = counter + 1 %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<div id="map-container">
+				<div id="map-canvas"></div>
+			</div>
+			{% else %}
+			<p class="lead">There are no restaurants matching your request!</p>
+			{% endif %}
+    </div> <!-- /container -->
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
+		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script src="{{ url_for('static',filename='js/bootstrap.min.js') }}" type="text/javascript"></script>
+		<script src="https://maps.googleapis.com/maps/api/js"></script>
+		<script>
+			var map;
+			var geocoder;
+			var searchResults = {{ results|tojson|safe }};
+			var lengthResults = {{ results|length }}
+			
+			// need to center map on city and geocode addresses that are missing
+			function initialize() {
+				geocoder = new google.maps.Geocoder();
+				var mapCanvas = document.getElementById('map-canvas');
+				var latlng = new google.maps.LatLng(0,0);
+				var mapOptions = {
+					zoom: 12
+				}
+				map = new google.maps.Map(mapCanvas, mapOptions);
+				if (searchResults[0]['city'] != "") {
+					var addr = searchResults[0]['city'] + ',' + searchResults[0]['state'];
+					centerOnCity(addr);
+				}
+				addMarkers();
+			}
+			
+		  function centerOnCity(address) {
+		    geocoder.geocode({ 'address': address}, function(results, status) {
+		      if (status == google.maps.GeocoderStatus.OK) {
+						map.setCenter(results[0].geometry.location);
+		      } else {
+		        alert("Geocode was not successful for the following reason: " + status);
+		      }
+		    });
+			}
+			
+			function addMarkers() {
+				for (var i = 0; i < lengthResults; i++) {
+					if(searchResults[i]['lat'] != "") {
+						alert('here');
+	        	var marker = new google.maps.Marker({
+	        		map: map,
+							position: new google.maps.LatLng(searchResults[i]['lat'], searchResults[i]['long']),
+							title:searchResults[i]['name']
+	        	});
+					} else {
+						addAddrMarker(searchResults[i]);
+					}
+				}
+			}
+			
+			function addAddrMarker(result) {
+				formatted_addr = result['addr'] + ' ' + result['city'] + ', ' + result['state'] + 
+					' ' + result['postalcode'];
+				geocoder.geocode({'address': formatted_addr}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						var marker = new google.maps.Marker({
+							map: map,
+							position: results[0].geometry.location,
+							title: result['name']
+						})
+					}
+				});
+			}
+			
+			google.maps.event.addDomListener(window, 'load', initialize);
+		</script>
+	</body>
+</html>
