@@ -142,7 +142,6 @@
 			function addMarkers() {
 				for (var i = 0; i < lengthResults; i++) {
 					if(searchResults[i]['lat'] != "") {
-						alert('here');
 	        	var marker = new google.maps.Marker({
 	        		map: map,
 							position: new google.maps.LatLng(searchResults[i]['lat'], searchResults[i]['long']),
