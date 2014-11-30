@@ -20,7 +20,13 @@ def main_page():
 @app.route('/search')
 def show_results():
   city = request.args.get('city')
-  return 'Results for %s' % city
+  group = request.args.get('group')
+  food = request.args.get('food')
+  with app.app_context():
+    results = mongo.db.restaurants.find({'city':city}, {'name':1,'lat':1,
+      'long':1,'city':1,'state':1,'addr':1}).limit(10)
+    results = [result for result in results]
+    return render_template('search.html', cities=cities, city=city, group=group, food=food, results=results)
     
 if __name__=='__main__':
   app.run(debug=True)
