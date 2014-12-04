@@ -25,4 +25,4 @@ class ProcessMatches:
             
 if __name__ == '__main__':
     processor = ProcessMatches("foursquare")
-    #processor2 = ProcessMatches("yelp")
+    processor2 = ProcessMatches("yelp")
