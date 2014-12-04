@@ -3,12 +3,12 @@ from restaurant_matcher import *
 
 class ProcessMatches:
     
-    def __init__(self,source):
+    def __init__(self):
         self.client = pymongo.MongoClient()
         self.db = self.client.yelpsquare
         self.collection = self.db.restaurants
         self.records = []
-        self.cur = self.collection.find({"map":"", "source":source})
+        self.cur = self.collection.find({})
         self.flag = True
         
         while(self.flag):
@@ -24,5 +24,5 @@ class ProcessMatches:
             RestaurantMatcher(self.records)
             
 if __name__ == '__main__':
-    processor = ProcessMatches("foursquare")
-    processor2 = ProcessMatches("yelp")
+    # Getting an error from the cursor timing out if both run
+    processor = ProcessMatches()
