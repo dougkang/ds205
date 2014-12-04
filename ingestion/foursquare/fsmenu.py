@@ -74,7 +74,7 @@ def crawl_fs_menus(fsmenu):
     for entry in cursor:
         print "[fsmenu] " + str(entry)
         menu = fsmenu.get_menu(entry['_id'])
-        menu['id'] = entry['_id'])
+        menu['id'] = entry['_id']
         fsmenu.menu_write(json.dumps(menu))
         fsmenu.menu_write("\n")
         time.sleep(0.75)
