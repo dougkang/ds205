@@ -1,0 +1,7 @@
+PyYAML==3.11
+argparse==1.2.1
+boto==2.34.0
+mrjob==0.4.2
+nltk==3.0.0
+simplejson==3.6.5
+wsgiref==0.1.2

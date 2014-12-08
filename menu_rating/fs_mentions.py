@@ -53,8 +53,8 @@ class ExtractReviews(MRJob):
     # the food was bad, normalize the reviews by subtracting by 2.5.
     # This gives us the added benefit that even a neutral review of 3 will still contribute to the
     # ranking of the menu item
-    rating = x["stars"] - 2.5
-    review = { "text": clean(x["text"]), "rating": rating }
+    rating = js["stars"] - 2.5
+    review = { "text": clean(js["text"]), "rating": rating }
     venue_id = js['business_id']
     yield (venue_id, json.dumps((review, 0)))
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
    elif sys.argv[1] == 'fs-mentions':
      AccumulateFoursquareMentions(args=sys.argv[2:]).run()
    elif sys.argv[1] == 'yelp-mentions':
-     AccumulateYelpMentions(args=sys.argv[2:]).run()
+     AccumulateYelpRatings(args=sys.argv[2:]).run()
    else:
      print >> sys.stderr, "Unrecognized job (expecting [menu, tips, reviews, fs-mentions, yelp-mentions])"
      sys.exit(1)
