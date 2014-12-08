@@ -57,10 +57,17 @@ class RestaurantParser:
         for item in address.split(' '):
             if item.lower() == "ste" or item.lower() == "suite":
                 return ''
-            if str.isdecimal(item):
+            if self.is_number(item):
                 return item
         return ''            
 
+    def is_number(self, s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+    
     def parse_yelp(self, filename):
         with open(filename) as file:
             err = 0
