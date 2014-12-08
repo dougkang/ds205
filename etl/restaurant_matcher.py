@@ -33,8 +33,10 @@ class RestaurantMatcher:
           record = {}
           if lookup["source"] == "foursquare":
             record["fs_id"] = lookup["_id"]
+            self.destination.remove({"fs_id":lookup["_id"]},"true")
           else:
             record["yelp_id"] = lookup["_id"]
+            self.destination.remove({"yelp_id":lookup["_id"]},"true")
           self.destination.insert(record)
          
     def find_match(self, record):
@@ -93,10 +95,13 @@ class RestaurantMatcher:
       scores = [result["_score"] for result in res['hits']['hits']]
       if res['hits']['hits']:
         result = res['hits']['hits'][0]
-        # Should we count top two as matches?
+        # If the top two results have the same score, don't return any matches
         if len(scores) > 1:
-          if scores[0] == scores[1] or scores[0] < 2:
+          if scores[0] == scores[1]:
             return
+        # If the top score has a score < 2, don't return any matches
+        if scores[0] < 2:
+          return
         return result
       return
 
@@ -120,6 +125,34 @@ class RestaurantMatcher:
         mapped_record["fs_id"] = lookup["_id"]
         mapped_record["yelp_id"] = match_record["_id"]
 
+      # Combine data from both sources
+      if lookup["addr"] == "":
+        mapped_record["addr"] = match["addr"]
+      else:
+        mapped_record["addr"] = lookup["addr"]
+      
+      if lookup["city"] == "":
+        mapped_record["city"] = match["city"]
+      else:
+        mapped_record["city"] = lookup["city"]
+        
+      if lookup["state"] == "":
+        mapped_record["state"] = match["state"]
+      else:
+        mapped_record["state"] = lookup["state"]
+        
+      if lookup["postalcode"] == "":
+        mapped_record["postalcode"] = match["postalcode"]
+      else:
+        mapped_record["postalcode"] = lookup["postalcode"]
+        
+      if lookup["lat"] == "":
+        mapped_record["lat"] = match["lat"]
+        mapped_record["long"] = match["long"]
+      else:
+        mapped_record["lat"] = lookup["lat"]
+        mapped_record["long"] = lookup["long"]
+      
       # Set the new map values in restaurants collection   
       lookup["map"] = match["_id"]
       lookup["map_score"] = match["_score"]
