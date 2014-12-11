@@ -7,7 +7,7 @@ class RestaurantParser:
         self.yelp_places = collections.Counter()
         self.fs_places = collections.Counter()
         # Need to update for AWS 
-        self.client = pymongo.MongoClient() #<-------------------------------------
+        self.client = pymongo.MongoClient(host='ec2-54-173-129-226.compute-1.amazonaws.com', port=27017)
         self.db = self.client.yelpsquare
         self.docs = self.db.restaurants
         

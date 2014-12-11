@@ -7,7 +7,7 @@ from flask.ext.pymongo import PyMongo
 app = Flask(__name__)
 with app.app_context():
     app.config.from_object('config')
-    mongo = PyMongo(app, config_prefix='MONGO')
+    mongo = PyMongo(app, config_prefix='MONGO2')
     cities = mongo.db.restaurants.distinct('city')
     cities.sort()
 
@@ -29,4 +29,4 @@ def show_results():
     return render_template('search.html', cities=cities, city=city, group=group, food=food, results=results)
     
 if __name__=='__main__':
-  app.run(debug=True)
+  app.run(host='0.0.0.0', port=10080)

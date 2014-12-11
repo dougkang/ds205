@@ -74,27 +74,36 @@
 				</form>
       </div>
 			{% if results|length > 0 %}
-			<table class="table">
-				<caption>Search results</caption>
-				<thead>
-					<tr>
-						<th class="col-md-1"></th>
-						<th class="col-md-2">Restaurant</th>
-						<th class="col-md-2">Rating</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% set counter = 1 %}
-					{% for result in results %}
-					<tr>	
-						<td>{{ counter }}</td>
-						<td>{{ result['name'] }}</td>
-						<td>***</td>
-					</tr>
-					{% set counter = counter + 1 %}
-					{% endfor %}
-				</tbody>
-			</table>
+			<div>
+				<table class="table table-hover">
+					<caption>Search results</caption>
+					<thead>
+						<tr>
+							<th class="col-md-1"></th>
+							<th class="col-md-2">Restaurant</th>
+							<th class="col-md-2">Rating</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% set counter = 1 %}
+						{% for result in results %}
+						<tr class="menulink">	
+							<td>{{ counter }}</td>
+							<td>{{ result['name'] }}</td>
+							<td>***</td>
+						</tr>
+						{% set counter = counter + 1 %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<div>
+				<table class="table">
+					<tbody>
+						
+					</tbody>
+				</table>
+			</div>
 			<div id="map-container">
 				<div id="map-canvas"></div>
 			</div>
@@ -119,7 +128,12 @@
 				var mapCanvas = document.getElementById('map-canvas');
 				var latlng = new google.maps.LatLng(0,0);
 				var mapOptions = {
-					zoom: 12
+					zoom: 12,
+			    scrollwheel: false,
+			    navigationControl: false,
+			    mapTypeControl: false,
+			    scaleControl: false,
+			    draggable: false
 				}
 				map = new google.maps.Map(mapCanvas, mapOptions);
 				if (searchResults[0]['city'] != "") {
@@ -148,7 +162,7 @@
 							title:searchResults[i]['name']
 	        	});
 					} else {
-						addAddrMarker(searchResults[i]);
+						addAddrMarker(searchResults[i], i+1);
 					}
 				}
 			}
@@ -168,6 +182,13 @@
 			}
 			
 			google.maps.event.addDomListener(window, 'load', initialize);
+			$(document).ready(function(){
+				$(".menulink").click(function() {
+					$('.menutarget').slideToggle("slow");
+					return false;
+				});
+			});
+
 		</script>
 	</body>
 </html>
