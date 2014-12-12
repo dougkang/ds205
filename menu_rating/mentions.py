@@ -63,10 +63,10 @@ class ExtractMenu(MRJob):
 
   def mapper(self, _, line):
     js = json.loads(line)
-    venue_id = js['id']
+    venue_id = js['venue_id']
     menuitems = get_menuitem(js)
     for mi in menuitems:
-      yield (venue_id, json.dumps((clean(mi), 1)))
+      yield (venue_id, json.dumps((mi, 1)))
 
 class AccumulateYelpRatings(MRJob):
   '''Does an inner join of all possible combinations of reviews and menus, then
@@ -91,7 +91,7 @@ class AccumulateYelpRatings(MRJob):
       for review in groups[0]:
         review_words = set(WORD_RE.findall(review["text"])) - STOPWORDS_SET
         for menuitem in groups[1]:
-          menu_words = set(WORD_RE.findall(menuitem)) - STOPWORDS_SET
+          menu_words = set(WORD_RE.findall(clean(menuitem))) - STOPWORDS_SET
           # If any part of the menuitem was mentioned, then chalk it up as a mention
           num_mentions = len(menu_words.intersection(review_words))
           yield ("%s|%s" % (venue_id, menuitem), review["rating"] if num_mentions > 0 else 0)

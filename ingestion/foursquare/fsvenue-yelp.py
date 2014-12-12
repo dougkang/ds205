@@ -58,10 +58,13 @@ if __name__ == '__main__':
         phone = js['display_phone']
         result = client.venues.search(params = { 
           "name": name, "ll": "%f,%f" % (latitude, longitude), "address": address, "phone": phone, "intent": "match" })
-        venue = result["venues"][0]
-        venue["yelpid"] = yelpid
+        fsid = result["venues"][0]["id"]
+        # sleep between API requests to make sure we don't hit the rate limit
+        time.sleep(crawler_wait) 
+        venue = client.venues(fsid)
+        venue["venue"]["yelpid"] = yelpid
         print "success"
-        f_output.write(json.dumps({ "venue": venue }, ensure_ascii = False) + "\n")
+        f_output.write(json.dumps(venue, ensure_ascii = False) + "\n")
       except Exception as e:
         # if something failed, increment the max retries 
         print "FAILED %s" % (e)

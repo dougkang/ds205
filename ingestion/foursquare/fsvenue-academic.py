@@ -14,7 +14,7 @@ sys.setdefaultencoding('UTF8')
 if __name__ == '__main__':
   
   # Parse input arguments
-  parser = argparse.ArgumentParser(description='Retrieves Foursquare Venues')
+  parser = argparse.ArgumentParser(description='Retrieves Foursquare Venues from Yelp Academic Dataset')
   parser.add_argument('--config', metavar='c', required=False, type=str, 
       default='./config.ini', help='path to config file')
   parser.add_argument('--dataset', metavar='b', required=False, type=str, 
@@ -64,12 +64,16 @@ if __name__ == '__main__':
       n_results = n_results + 1
 
       try:
+        address = js['full_address'].split('\n')[0]
         result = client.venues.search(params = { 
-          "name": name, "city": city, "ll": "%f,%f" % (latitude, longitude), "intent": "match" })
+          "name": name, "ll": "%f,%f" % (latitude, longitude), "address": address, "intent": "match" })
+        fsid = result["venues"][0]["id"]
+        # sleep between API requests to make sure we don't hit the rate limit
+        time.sleep(crawler_wait) 
+        venue = client.venues(fsid)
         venue = result["venues"][0]
-        venue["yelpid"] = yelpid
         print "success"
-        f_output.write(json.dumps({ "venue": venue }, ensure_ascii = False).encode('utf-8') + "\n")
+        f_output.write(json.dumps(venue, ensure_ascii = False) + "\n")
       except Exception as e:
         # if something failed, increment the max retries 
         print "FAILED %s" % (e)

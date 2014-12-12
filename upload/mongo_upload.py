@@ -25,11 +25,13 @@ if __name__ == '__main__':
   host = config['Mongo']['Host']
   port = int(config['Mongo']['Port'])
   db = config['Yelpsquare']['DB']
-  collection = config['Yelpsquare']['RestaurantsCollection']
+  rescoll = config['Yelpsquare']['RestaurantsCollection']
+  menucoll = config['Yelpsquare']['MenuCollection']
   mongourl = "mongodb://%s:%d/" % (host, port)
 
   client = MongoClient(mongourl)
-  mongo = client[db][collection]
+  res_mongo = client[db][rescoll]
+  menu_mongo = client[db][menucoll]
 
   ybi_total = 0
   ybi_success = 0
@@ -57,7 +59,7 @@ if __name__ == '__main__':
                      "long": js['location']['coordinate']['longitude'],
                      "hasyelp": True,
                    }
-          mongo.update({ "yelpid": yelpid }, record, upsert = True)
+          res_mongo.update({ "yelpid": yelpid }, record, upsert = True)
           ybi_success = ybi_success + 1 
           print "success"
         except Exception as e:
@@ -86,7 +88,7 @@ if __name__ == '__main__':
                      "hasfs": True,
                      "url": venue['url'] if 'url' in venue else None
                    }
-          mongo.update({ "yelpid": yelpid }, record, upsert = True)
+          res_mongo.update({ "yelpid": yelpid }, record, upsert = True)
           fsbi_success = fsbi_success + 1 
           print "success"
         except Exception as e:
@@ -94,6 +96,31 @@ if __name__ == '__main__':
           print "FAILED %s" % (e)
   else:
     print "Skipping Foursquare Businesses push"
+
+  me_total = 0
+  me_success = 0
+  if args.menu_results is not None:
+    print "Pushing Menu Mentions to Mongo..."
+    with open(args.menu_results , 'r') as f_mentions:
+      for x in f_mentions:
+        print "[%d]: " % (me_total),
+        me_total = me_total + 1 
+        try:
+	  (key, count) = x.strip().split('\t')
+          (fsid, name) = key.strip('"').split('|')
+          print "%s %s %s -" % (fsid, name, count),
+          record = { "fsid": fsid,
+                     "name": name,
+                     "num_mentions": int(count)
+                   }
+          menu_mongo.update({ "fsid": fsid }, record, upsert = True)
+          me_success = me_success + 1 
+          print "success"
+        except Exception as e:
+          # if something failed, increment the max retries 
+          print "FAILED %s" % (e)
+  else:
+    print "Skipping Foursquare Menu Mentions push"
   
 
 
