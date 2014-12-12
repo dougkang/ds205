@@ -5,6 +5,11 @@ import argparse
 import time
 import json
 import foursquare
+import codecs
+import sys
+
+reload(sys)
+sys.setdefaultencoding('UTF8')
 
 if __name__ == '__main__':
   
@@ -25,7 +30,7 @@ if __name__ == '__main__':
   c_secret = config['Foursquare']['ClientSecret']
   crawler_wait = float(config['Foursquare']['CrawlerWait'])
  
-  with open(args.dataset, 'r') as f_dataset, open(args.output, 'w') as f_output:
+  with codecs.open(args.dataset, 'r', 'utf-8') as f_dataset, codecs.open(args.output, 'w', "utf-8") as f_output:
     # Initialize all the things we need for scraping 
     client = foursquare.Foursquare(client_id = c_id, client_secret = c_secret)
 
@@ -36,7 +41,7 @@ if __name__ == '__main__':
     for x in f_dataset:
 
       try:
-        js = json.loads(x)
+        js = json.loads(x, encoding='utf-8')
       except Exception as e:
         print "Skipping invalid json %s: %s" % (x, e)
         continue
@@ -52,17 +57,19 @@ if __name__ == '__main__':
       latitude = js['latitude']
       longitude = js['longitude']
       yelpid = js['business_id']
+      city = js['city']
+      address = js['full_address'].split("\n")[0]
 
       print "[%d]: %s,%s -" % (n_results, name, yelpid),
       n_results = n_results + 1
 
       try:
         result = client.venues.search(params = { 
-          "name": name, "llAcc": 100, "ll": "%f,%f" % (latitude, longitude) })
+          "name": name, "city": city, "ll": "%f,%f" % (latitude, longitude), "intent": "match" })
         venue = result["venues"][0]
         venue["yelpid"] = yelpid
         print "success"
-        f_output.write(json.dumps({ "venue": venue }) + "\n")
+        f_output.write(json.dumps({ "venue": venue }, ensure_ascii = False).encode('utf-8') + "\n")
       except Exception as e:
         # if something failed, increment the max retries 
         print "FAILED %s" % (e)

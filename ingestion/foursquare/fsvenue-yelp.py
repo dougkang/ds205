@@ -5,6 +5,7 @@ import argparse
 import time
 import json
 import foursquare
+import codecs
 
 if __name__ == '__main__':
   
@@ -25,7 +26,7 @@ if __name__ == '__main__':
   c_secret = config['Foursquare']['ClientSecret']
   crawler_wait = float(config['Foursquare']['CrawlerWait'])
  
-  with open(args.dataset, 'r') as f_dataset, open(args.output, 'w') as f_output:
+  with codecs.open(args.dataset, 'r', 'utf-8') as f_dataset, codecs.open(args.output, 'w', 'utf-8') as f_output:
     # Initialize all the things we need for scraping 
     client = foursquare.Foursquare(client_id = c_id, client_secret = c_secret)
 
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         venue = result["venues"][0]
         venue["yelpid"] = yelpid
         print "success"
-        f_output.write(json.dumps({ "venue": venue }) + "\n")
+        f_output.write(json.dumps({ "venue": venue }, ensure_ascii = False) + "\n")
       except Exception as e:
         # if something failed, increment the max retries 
         print "FAILED %s" % (e)
