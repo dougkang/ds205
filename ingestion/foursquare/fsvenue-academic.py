@@ -71,7 +71,7 @@ if __name__ == '__main__':
         # sleep between API requests to make sure we don't hit the rate limit
         time.sleep(crawler_wait) 
         venue = client.venues(fsid)
-        venue = result["venues"][0]
+        venue["yelpid"] = yelpid
         print "success"
         f_output.write(json.dumps(venue, ensure_ascii = False) + "\n")
       except Exception as e:

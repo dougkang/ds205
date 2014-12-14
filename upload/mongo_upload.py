@@ -14,9 +14,9 @@ if __name__ == '__main__':
   parser.add_argument('--fs_businesses', metavar='y', required=False, type=str, 
       help='path to foursquare businesses')
   parser.add_argument('--group_results', metavar='y', required=False, type=str, 
-      default='./group_extract.json', help='path to group extraction')
+      help='path to group extraction')
   parser.add_argument('--menu_results', metavar='y', required=False, type=str, 
-      default='./menu_mentions.json', help='path to menu mention ranking')
+      help='path to menu mention ranking')
   args = parser.parse_args()
 
   # Read configs using config parser
@@ -121,9 +121,38 @@ if __name__ == '__main__':
           print "FAILED %s" % (e)
   else:
     print "Skipping Foursquare Menu Mentions push"
-  
 
+  grp_total = 0
+  grp_success = 0
+  if args.group_results is not None:
+    print "Pushing Group Results to Mongo..."
+    with open(args.group_results, 'r') as f_groups:
+      for x in f_groups:
+        print "[%d]: " % (grp_total),
+        grp_total = grp_total + 1 
+        try:
+	  (yelpid, group) = x.strip().split('\t')
+          print "%s %s -" % (yelpid, group),
+          record = { "yelpid": yelpid,
+                     "group": group
+                   }
+          res_mongo.update({ "yelpid": yelpid}, record, upsert = True)
+          grp_success = grp_success + 1 
+          print "success"
+        except Exception as e:
+          # if something failed, increment the max retries 
+          print "FAILED %s" % (e)
+  else:
+    print "Skipping Group Extract push"
+
+  res_mongo.ensure_index("yelpid")
+  res_mongo.ensure_index("fsid")
+  res_mongo.ensure_index("group")
+  res_mongo.ensure_index("city")
+  menu_mongo.ensure_index("fsid")
 
   print "COMPLETED"
   print "- %d/%d ybi" % (ybi_success, ybi_total)
   print "- %d/%d fsbi" % (fsbi_success, fsbi_total)
+  print "- %d/%d me" % (me_success, me_total)
+  print "- %d/%d grp" % (grp_success, grp_total)

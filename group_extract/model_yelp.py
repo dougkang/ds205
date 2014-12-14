@@ -102,6 +102,6 @@ final_predict = []
 final_predict = clf.predict(X_test)
 print final_predict
 
-myfile = open("predict.csv", 'wb')
+myfile = open("test.csv", 'wb')
 wr = csv.writer(myfile)
 wr.writerow(final_predict)

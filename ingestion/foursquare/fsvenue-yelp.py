@@ -45,15 +45,14 @@ if __name__ == '__main__':
       # sleep between API requests to make sure we don't hit the rate limit
       time.sleep(crawler_wait) 
 
-      name = js['name'].lower()
-      latitude = js['location']['coordinate']['latitude']
-      longitude = js['location']['coordinate']['longitude']
-      yelpid = js['id']
-
-      print "[%d]: %s,%s:(%f,%f) -" % (n_results, name, yelpid, latitude, longitude),
-      n_results = n_results + 1
-
       try:
+        name = js['name'].lower()
+        latitude = js['location']['coordinate']['latitude']
+        longitude = js['location']['coordinate']['longitude']
+        yelpid = js['id']
+
+        print "[%d]: %s,%s:(%f,%f) -" % (n_results, name, yelpid, latitude, longitude),
+        n_results = n_results + 1
         address = js['location']['address']
         phone = js['display_phone']
         result = client.venues.search(params = { 
@@ -62,7 +61,7 @@ if __name__ == '__main__':
         # sleep between API requests to make sure we don't hit the rate limit
         time.sleep(crawler_wait) 
         venue = client.venues(fsid)
-        venue["venue"]["yelpid"] = yelpid
+        venue["yelpid"] = yelpid
         print "success"
         f_output.write(json.dumps(venue, ensure_ascii = False) + "\n")
       except Exception as e:

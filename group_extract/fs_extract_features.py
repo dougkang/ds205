@@ -5,7 +5,7 @@ from pymongo import MongoClient
 from bson import json_util
 
 def bag_of_words_attr(word, attr):
-  return "%s:%s" % (word, attr)
+  return "%s:%s" % (attr, word)
 
 def extract_restaurant_features(json):
   """Given a json object representing the restaurant, extract our features"""
@@ -15,18 +15,17 @@ def extract_restaurant_features(json):
   address = location["address"].lower().split(" ", 1) if "address" in location else {}
 
   categories = [ 
-      bag_of_words_attr(x["name"].lower(), "primary" if x["primary"] else "secondary") 
+      bag_of_words_attr(x["name"].lower(), "a" if "primary" in x and x["primary"] else "b") 
       for x in venue["categories"] ]
 
   return {
     "name": venue["name"].lower(),
-    "price": price["message"].lower() if "message" in price else "unknown",
     "price_tier": price["tier"] if "tier" in price else 0,
     "state": location["state"].lower() if "state" in location else "unknown",
     "city": location["city"].lower() if "city" in location else "unknown",
     "house_no": address[0] if len(address) > 1 else "none",
     "street": address[-1] if len(address) > 0 else "unknown",
-    "categories": "\n".join(categories) }
+    "categories": categories }
 
 def extract_tip_features(json):
   """Given a json object representing the tips, extract our features"""
@@ -72,8 +71,8 @@ if __name__ == '__main__':
   config.read(args.config)
   mongo_host = config['Mongo']['Host']
   mongo_port = int(config['Mongo']['Port'])
-  db_name = config['Foursquare']['FeatureDB']
-  coll_name = config['Foursquare']['FeatureCollection']
+  db_name = config['Yelpsquare']['FeatureDB']
+  coll_name = config['Yelpsquare']['FeatureCollection']
 
   try:
     connection = MongoClient(mongo_host, mongo_port, safe=True)
@@ -99,11 +98,11 @@ if __name__ == '__main__':
         vid = bjson["venue"]["id"]
         print "[%d] %s: extracting restaurant features:" % (b_count, vid),
         feat = extract_restaurant_features(bjson)
-        feat["id"] = vid
+        feat["fsid"] = vid
         # for the academic dataset pull, if we have a yelp id, then include it
-        if "yelpid" in bjson["venue"]:
-          feat["yelpid"] = bjson["venue"]["yelpid"] 
-        collection.insert(feat)
+        if "yelpid" in bjson:
+          feat["yelpid"] = bjson["yelpid"] 
+        collection.update({ "fsid": vid }, { "$set": feat }, upsert = True)
         print "SUCCESS"
       except Exception as e:
         b_fail_count = b_fail_count + 1
@@ -120,7 +119,7 @@ if __name__ == '__main__':
         vid = bjson["venue_id"]
         print "[%d] %s: extracting tip features:" % (t_count, vid),
         feat = extract_tip_features(bjson)
-        collection.find_and_modify({ "id": vid }, { "$set": feat })
+        collection.find_and_modify({ "fsid": vid }, { "$set": feat })
         print "SUCCESS"
       except Exception as e:
         t_fail_count = t_fail_count + 1

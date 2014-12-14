@@ -9,7 +9,7 @@ import foursquare
 if __name__ == '__main__':
   
   # Parse input arguments
-  parser = argparse.ArgumentParser(description='Retrieves Yelp Reviews')
+  parser = argparse.ArgumentParser(description='Retrieves Foursquare Tips')
   parser.add_argument('--config', metavar='c', required=False, type=str, 
       default='./config.ini', help='path to config file')
   parser.add_argument('--businesses', metavar='b', required=False, type=str, 
@@ -43,11 +43,8 @@ if __name__ == '__main__':
         print "Skipping invalid json %s: %s" % (x, e)
         continue
 
-      if 'venue' not in js:
-        print "Skipping json with missing venue: %s" % js 
-        continue 
-
       business_id = js['venue']['id']
+      yelpid = js['yelpid']
 
       print "[%d]: %s -" % (n_results, business_id),
       n_results = n_results + 1
@@ -56,6 +53,7 @@ if __name__ == '__main__':
         tips = client.venues.tips(business_id)
         tips['venue_id'] = business_id
         tips['venue_name'] = js['venue']['name']
+        tips['yelpid'] = yelpid
         print "success"
         f_output.write(json.dumps(tips) + "\n")
       except Exception as e:
