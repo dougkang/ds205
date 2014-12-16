@@ -44,15 +44,7 @@
 				<form role="form" method="GET" action="">
 					<div class="row">
 						<div class="form-group col-md-3">
-							<select type="text" class="form-control">
-								<option value="" selected disabled>What's for dinner?</option>
-								{% for city in cities %}
-						    <option>{{city}}</option>
-								{% endfor %}
-							</select>
-						</div>
-						<div class="form-group col-md-3">
-							<select name="city" type="text" class="form-control">
+							<select id="city" name="city" type="text" class="form-control">
 								<option value="" selected disabled>Where are you?</option>
 								{% for city in cities %}
 						    <option value="{{ city }}">{{ city }}</option>
@@ -60,11 +52,16 @@
 							</select>
 						</div>
 						<div class="form-group col-md-3">
+							<select name="food" type="text" class="form-control">
+								<option value="" selected disabled>What's for dinner?</option>
+								{% for category in categories %}
+						    <option value="{{ category }}">{{ category }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="form-group col-md-3">
 							<select type="text" class="form-control">
 								<option value="" selected disabled>Who's going?</option>
-								{% for city in cities %}
-						    <option>{{ city }}</option>
-								{% endfor %}
 							</select>
 						</div>
 						<div class="form-group col-md-3">
@@ -90,17 +87,27 @@
 						<tr class="menulink">	
 							<td>{{ counter }}</td>
 							<td>{{ result['name'] }}</td>
-							<td>***</td>
+							<td>{{ result['rating'] }}</td>
+						</tr>
+						<tr id="menu{{ counter }}" class="menutarget">
+							<td>
+								<a href="{{ result['yelpurl']}}">
+									<img class="image" src="{{ url_for('static', filename='images/yelp.png') }}" />
+								</a>
+							</td>
+							<td colspan="2">
+								<h4>Top menu choices</h4>
+								<ul>
+									{% for menuitem in result['menu'] %}
+									<li>
+										{{ menuitem['name'] }}
+									</li>
+									{% endfor %}
+								</ul>
+							</td>
 						</tr>
 						{% set counter = counter + 1 %}
 						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-			<div>
-				<table class="table">
-					<tbody>
-						
 					</tbody>
 				</table>
 			</div>
@@ -169,7 +176,7 @@
 			
 			function addAddrMarker(result) {
 				formatted_addr = result['addr'] + ' ' + result['city'] + ', ' + result['state'] + 
-					' ' + result['postalcode'];
+					' ' + result['postal_code'];
 				geocoder.geocode({'address': formatted_addr}, function(results, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						var marker = new google.maps.Marker({
@@ -178,13 +185,16 @@
 							title: result['name']
 						})
 					}
-				});
+				});	
 			}
 			
 			google.maps.event.addDomListener(window, 'load', initialize);
 			$(document).ready(function(){
+				$("#city").val();
 				$(".menulink").click(function() {
-					$('.menutarget').slideToggle("slow");
+					if ($.trim($(this).next().find('li').html())!='') {
+						$(this).next().slideToggle("slow");
+					}	
 					return false;
 				});
 			});

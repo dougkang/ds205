@@ -4,7 +4,8 @@ from restaurant_matcher import *
 class ProcessMatches:
     
     def __init__(self):
-        self.client = pymongo.MongoClient()#host='ec2-54-173-129-226.compute-1.amazonaws.com', port=27017)
+        self.client = pymongo.MongoClient()
+          #host='ec2-54-173-129-226.compute-1.amazonaws.com', port=27017)
         self.db = self.client.yelpsquare
         self.collection = self.db.restaurants
         self.records = []
@@ -22,6 +23,7 @@ class ProcessMatches:
                 self.flag = False
                 break
             # Can optimize this by running multiple threads
+            print self.records
             RestaurantMatcher(self.records)
           cur = self.collection.find({"parsed":0}).limit(1)
           if cur.count() == 0:

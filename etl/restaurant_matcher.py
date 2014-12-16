@@ -4,9 +4,12 @@ import pymongo,math,elasticsearch,sys
 class RestaurantMatcher:
     
     def __init__(self, lookups):
-      self.client = pymongo.MongoClient()#host='ec2-54-173-129-226.compute-1.amazonaws.com', port=27017)
+      self.client = pymongo.MongoClient(
+        host='ec2-54-173-129-226.compute-1.amazonaws.com', port=27017)
+      self.client2 = pymongo.MongoClient()
       self.db = self.client.yelpsquare
-      self.collection = self.db.restaurants
+      self.db2 = self.client2.yelpsquare
+      self.collection = self.db2.restaurants
       # The destination collection is where output is stored
       self.destination = self.db.matched_restaurants
       self.es = elasticsearch.Elasticsearch()
@@ -32,10 +35,11 @@ class RestaurantMatcher:
           record = {}
           if lookup["source"] == "foursquare":
             record["fs_id"] = lookup["_id"]
-            print 'remove'
+            record["yelp_id"] = ""
             self.destination.remove({"fs_id":lookup["_id"]},"true")
           else:
             record["yelp_id"] = lookup["_id"]
+            record["fs_id"] = ""
             self.destination.remove({"yelp_id":lookup["_id"]},"true")
           record["city"] = lookup["city"]
           record["state"] = lookup["state"]
@@ -107,7 +111,7 @@ class RestaurantMatcher:
           if scores[0] == scores[1]:
             return
         # If the top score has a score < 1, don't return any matches
-        if scores[0] < 3.7:
+        if scores[0] < 4.2:
           return
         print record
         print result
