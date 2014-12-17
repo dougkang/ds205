@@ -47,7 +47,6 @@ def search():
           result['menu'] = menu
         except KeyError:
           result['menu'] = []
-      print results
       return render_template('search.html', cities=cities, results=results,
         categories=categories, groups=groups, city=city, group=group, food=food)
     if food is not None and city is not None:
@@ -64,9 +63,24 @@ def search():
           result['menu'] = menu
         except KeyError:
           result['menu'] = []
-      print results
       return render_template('search.html', cities=cities, results=results,
         categories=categories, groups=groups, city=city, food=food)
+    if group is not None and city is not None:
+      results = mongo.db.restaurants.find({'$and':[{'city':city},
+        {'group':group}]}, {'_id':0,'name':1,'lat':1,'long':1,'city':1,
+        'state':1,'addr':1,'rating':1,'postal_code':1,'categories':1,
+        'yelpurl':1,'fsid':1}).sort('rating',-1).limit(10)
+      results = [result for result in results]
+      for result in results:
+        try:
+          menu_items = mongo.db.menu.find({'fsid':result['fsid']},{'_id':0,
+            'name':1,'num_mentions':1}).sort('num_mentions',-1)
+          menu = [menu_item for menu_item in menu_items]
+          result['menu'] = menu
+        except KeyError:
+          result['menu'] = []
+      return render_template('search.html', cities=cities, results=results,
+        categories=categories, groups=groups, city=city, group=group)
     if city is not None:
       results = mongo.db.restaurants.find({'city':city}, {'_id':0,'name':1,
       'lat':1,'long':1,'city':1,'state':1,'addr':1,'rating':1,'postal_code':1,
