@@ -34,7 +34,7 @@ if __name__ == '__main__':
   coll_name = config['Yelpsquare']['FeatureCollection']
 
   try:
-    connection = MongoClient(mongo_host, mongo_port, safe=True)
+    connection = MongoClient(mongo_host, mongo_port, safe = False)
     collection = connection[db_name][coll_name]
   except Exception as e:
     print "Something went wrong with the DB connection!: %s" % e
@@ -44,7 +44,6 @@ if __name__ == '__main__':
     print "Clearing db"
     collection.drop()
  
-  collection.ensure_index("id")
   collection.ensure_index("yelpid")
 
   b_count = 0
@@ -59,7 +58,7 @@ if __name__ == '__main__':
         print "[%d] %s: extracting restaurant features:" % (b_count, vid),
         feat = extract_restaurant_features(bjson)
         feat["yelpid"] = vid
-        collection.update({ "yelpid": vid }, { "$set": feat }, upsert = True)
+        collection.save(feat)
         print "SUCCESS"
       except Exception as e:
         b_fail_count = b_fail_count + 1

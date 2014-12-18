@@ -102,7 +102,7 @@ if __name__ == '__main__':
     
     Y_train[:] = LabelEncoder().fit_transform(Y_train[:])
     
-    clf = ensemble.RandomForestClassifier(n_estimators = 25, criterion = 'entropy', max_depth = 5)
+    clf = ensemble.RandomForestClassifier(n_estimators = 500, criterion = 'entropy', max_depth = 5)
     clf.fit(X_train, Y_train)
  
     X_test = np.asarray(test_features)

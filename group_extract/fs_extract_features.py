@@ -85,7 +85,7 @@ if __name__ == '__main__':
     print "Clearing db"
     collection.drop()
  
-  collection.ensure_index("id")
+  collection.ensure_index("yelpid")
 
   b_count = 0
   b_fail_count = 0
@@ -95,14 +95,12 @@ if __name__ == '__main__':
       b_count = b_count + 1
       try:
         bjson = json.loads(x)
-        vid = bjson["venue"]["id"]
+        vid = bjson["yelpid"] 
         print "[%d] %s: extracting restaurant features:" % (b_count, vid),
         feat = extract_restaurant_features(bjson)
-        feat["fsid"] = vid
-        # for the academic dataset pull, if we have a yelp id, then include it
-        if "yelpid" in bjson:
-          feat["yelpid"] = bjson["yelpid"] 
-        collection.update({ "fsid": vid }, { "$set": feat }, upsert = True)
+        feat["fsid"] = bjson["venue"]["id"] 
+        feat["yelpid"] = vid 
+        collection.update({ "yelpid": vid }, { "$set": feat }, upsert = True)
         print "SUCCESS"
       except Exception as e:
         b_fail_count = b_fail_count + 1
@@ -119,7 +117,7 @@ if __name__ == '__main__':
         vid = bjson["venue_id"]
         print "[%d] %s: extracting tip features:" % (t_count, vid),
         feat = extract_tip_features(bjson)
-        collection.find_and_modify({ "fsid": vid }, { "$set": feat })
+        collection.update({ "fsid": vid }, { "$set": feat }, upsert = False)
         print "SUCCESS"
       except Exception as e:
         t_fail_count = t_fail_count + 1

@@ -30,8 +30,13 @@ if __name__ == '__main__':
   mongourl = "mongodb://%s:%d/" % (host, port)
 
   client = MongoClient(mongourl)
+  client.write_concern = { 'w': 1 }
   res_mongo = client[db][rescoll]
   menu_mongo = client[db][menucoll]
+
+  res_mongo.ensure_index("yelpid")
+  res_mongo.ensure_index("fsid")
+  menu_mongo.ensure_index("fsid")
 
   ybi_total = 0
   ybi_success = 0
@@ -50,6 +55,7 @@ if __name__ == '__main__':
                      "city": js['location']['city'],
                      "state": js['location']['state_code'],
                      "addr": " ".join(js['location']['address']),
+                     "postal_code": js['location']['postal_code'],
                      "phone": js['phone'] if 'phone' in js else None,
                      "rating": js['rating'],
                      "reviews": js['review_count'],
@@ -59,11 +65,10 @@ if __name__ == '__main__':
                      "long": js['location']['coordinate']['longitude'],
                      "hasyelp": True,
                    }
-          res_mongo.update({ "yelpid": yelpid }, record, upsert = True)
+          res_mongo.update({ "yelpid": yelpid }, { "$set": record }, upsert = True)
           ybi_success = ybi_success + 1 
           print "success"
         except Exception as e:
-          # if something failed, increment the max retries 
           print "FAILED %s" % (e)
   else:
     print "Skipping Yelp Businesses push"
@@ -79,16 +84,16 @@ if __name__ == '__main__':
         try:
           js = json.loads(x)
           venue = js['venue']
-          yelpid = venue['yelpid']
+          yelpid = js['yelpid']
           print "%s -" % (yelpid),
-          record = { "yelpid": yelpid,
+          record = { 
                      "fsid": venue['id'],
                      "tips": venue['stats']['tipCount'],
                      "checkins": venue['stats']['checkinsCount'],
                      "hasfs": True,
                      "url": venue['url'] if 'url' in venue else None
                    }
-          res_mongo.update({ "yelpid": yelpid }, record, upsert = True)
+          res_mongo.update({ "yelpid": yelpid }, { "$set": record }, upsert = True)
           fsbi_success = fsbi_success + 1 
           print "success"
         except Exception as e:
@@ -109,11 +114,11 @@ if __name__ == '__main__':
 	  (key, count) = x.strip().split('\t')
           (fsid, name) = key.strip('"').split('|')
           print "%s %s %s -" % (fsid, name, count),
-          record = { "fsid": fsid,
+          record = { 
                      "name": name,
                      "num_mentions": int(count)
                    }
-          menu_mongo.update({ "fsid": fsid }, record, upsert = True)
+          menu_mongo.update({ "fsid": fsid }, { "$set": record }, upsert = True)
           me_success = me_success + 1 
           print "success"
         except Exception as e:
@@ -133,10 +138,10 @@ if __name__ == '__main__':
         try:
 	  (yelpid, group) = x.strip().split('\t')
           print "%s %s -" % (yelpid, group),
-          record = { "yelpid": yelpid,
+          record = { 
                      "group": group
                    }
-          res_mongo.update({ "yelpid": yelpid}, record, upsert = True)
+          res_mongo.update({ "yelpid": yelpid}, { '$set': record })
           grp_success = grp_success + 1 
           print "success"
         except Exception as e:
@@ -145,11 +150,7 @@ if __name__ == '__main__':
   else:
     print "Skipping Group Extract push"
 
-  res_mongo.ensure_index("yelpid")
-  res_mongo.ensure_index("fsid")
-  res_mongo.ensure_index("group")
-  res_mongo.ensure_index("city")
-  menu_mongo.ensure_index("fsid")
+  client.close()
 
   print "COMPLETED"
   print "- %d/%d ybi" % (ybi_success, ybi_total)

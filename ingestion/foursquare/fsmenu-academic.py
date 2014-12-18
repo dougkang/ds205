@@ -13,7 +13,7 @@ if __name__ == '__main__':
   parser.add_argument('--config', metavar='c', required=False, type=str, 
       default='./config.ini', help='path to config file')
   parser.add_argument('--dataset', metavar='b', required=False, type=str, 
-      default='./dump_fs.txt', help='path to yelp academic dataset')
+      default='./dump_fs.txt', help='path to foursquare businesses')
   parser.add_argument('--output', metavar='o', required=False, type=str, 
       default='./menu.json', help='path to output file')
   args = parser.parse_args()
@@ -45,7 +45,7 @@ if __name__ == '__main__':
       time.sleep(crawler_wait) 
 
       name = js['venue']['name'].lower()
-      yelpid = js['venue']['yelpid']
+      yelpid = js['yelpid']
       venue_id = js['venue']['id']
 
       print "[%d]: %s,%s -" % (n_results, name, yelpid),
