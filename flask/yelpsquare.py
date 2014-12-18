@@ -37,7 +37,7 @@ def search():
       results = mongo.db.restaurants.find({'$and':[{'city':city},{'categories':
         {'$in': [food] }}, {'group':group}]}, {'_id':0,'name':1,'lat':1,
         'long':1,'city':1,'state':1,'addr':1,'rating':1,'postal_code':1,
-        'categories':1,'yelpurl':1,'fsid':1}).sort('rating',-1).limit(10)
+        'categories':1,'yelpurl':1,'fsid':1}).sort('rating',-1).limit(50)
       results = [result for result in results]
       for result in results:
         try:
@@ -53,7 +53,7 @@ def search():
       results = mongo.db.restaurants.find({'$and':[{'city':city},{'categories':
         {'$in': [food] }}]}, {'_id':0,'name':1,'lat':1,'long':1,'city':1,
         'state':1,'addr':1,'rating':1,'postal_code':1,'categories':1,
-        'yelpurl':1,'fsid':1}).sort('rating',-1).limit(10)
+        'yelpurl':1,'fsid':1}).sort('rating',-1).limit(50)
       results = [result for result in results]
       for result in results:
         try:
@@ -69,7 +69,7 @@ def search():
       results = mongo.db.restaurants.find({'$and':[{'city':city},
         {'group':group}]}, {'_id':0,'name':1,'lat':1,'long':1,'city':1,
         'state':1,'addr':1,'rating':1,'postal_code':1,'categories':1,
-        'yelpurl':1,'fsid':1}).sort('rating',-1).limit(10)
+        'yelpurl':1,'fsid':1}).sort('rating',-1).limit(50)
       results = [result for result in results]
       for result in results:
         try:
@@ -84,9 +84,18 @@ def search():
     if city is not None:
       results = mongo.db.restaurants.find({'city':city}, {'_id':0,'name':1,
       'lat':1,'long':1,'city':1,'state':1,'addr':1,'rating':1,'postal_code':1,
-      'categories':1,'yelpurl':1}).sort('rating',-1).limit(10)
+      'categories':1,'yelpurl':1,'fsid':1}).sort('rating',-1).limit(50)
       results = [result for result in results]
-      print results
+      for result in results:
+        try:
+          menu_items = mongo.db.menu.find({'fsid':result['fsid']},{'_id':0,
+            'name':1,'num_mentions':1}).sort('num_mentions',-1)
+          print menu_items.count()
+          menu = [menu_item for menu_item in menu_items]
+          result['menu'] = menu
+          print menu
+        except KeyError:
+          result['menu'] = []
       return render_template('search.html', cities=cities, results=results,
         categories=categories, groups=groups, city=city)
     

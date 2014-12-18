@@ -80,18 +80,22 @@
 					<caption>city:{{ city }}, food:{{ food }}, group:{{ group }}</caption>
 					<thead>
 						<tr>
-							<th class="col-md-1"></th>
+							<th class="col-md-1">Rating</th>
 							<th class="col-md-2">Restaurant</th>
-							<th class="col-md-2">Rating</th>
+							<th class="col-md-2">Address</th>
 						</tr>
 					</thead>
 					<tbody>
 						{% set counter = 1 %}
 						{% for result in results %}
 						<tr class="menulink">	
-							<td>{{ counter }}</td>
-							<td>{{ result['name'] }}</td>
 							<td>{{ result['rating'] }}</td>
+							<td>{{ result['name'] }}
+							{% for menuitem in result['menu'] %}
+							<img class="image2" src="{{ url_for('static', filename='images/plate.png') }}" />
+							{% endfor %}
+							</td>
+							<td>{{ result['addr'] }}</td>
 						</tr>
 						<tr id="menu{{ counter }}" class="menutarget">
 							<td>

@@ -76,7 +76,7 @@ class RestaurantMatcher:
                  { "match": {
                      "addr_num": {
                        "query": record["addr_num"],
-                       "boost": 5}}},
+                       "boost": 1}}},
                  # Looks for a location within +- 250 ft, 
                  # approximately the same city block.
                  { "fuzzy": {
